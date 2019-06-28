@@ -121,17 +121,6 @@ create_directory() {
     return 0
 }
 
-# checks whether the source revision specified by the first argument is a tag
-is_untagged_build() {
-    git tag | grep "${1}" 1> /dev/null
-    if [ ${?} -ne 0 ]
-    then
-        return 0
-    fi
-
-    return 1
-}
-
 # check that necessary tooling is present
 check_executables_are_available "readlink" "dirname" "pwd" "git" "rm" "mkdir" "docker" "grep" "zip"
 if [ ${?} -ne 0 ]
@@ -170,7 +159,7 @@ then
 fi
 
 # compute the directory for the build output
-BIN_DIRECTORY="${SCRIPT_DIRECTORY}/bin/${SOURCE_REVISION}"
+BIN_DIRECTORY="${SCRIPT_DIRECTORY}/bin"
 
 # remove build output directory
 remove_directory "${BIN_DIRECTORY}"
@@ -209,21 +198,191 @@ then
     exit 1
 fi
 
-# if this is not a tagged build then exit
-if is_untagged_build "${SOURCE_REVISION}"
-then
-    # change back to the current directory
-    change_directory "${CURRENT_DIRECTORY}"
-    if [ ${?} -ne 0 ]
-    then
-        exit 1
-    fi
+# compute the directory for the distribution output
+DIST_DIRECTORY="${SCRIPT_DIRECTORY}/dist"
 
-    exit 0
+# remove dist output directory
+remove_directory "${DIST_DIRECTORY}"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
 fi
 
-# TODO
-# create distribution
+# make the dist output directory
+create_directory "${DIST_DIRECTORY}"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+
+# create Wii dist zip
+create_directory "${DIST_DIRECTORY}/wii"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+create_directory "${DIST_DIRECTORY}/wii/apps"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+create_directory "${DIST_DIRECTORY}/wii/apps/vbagx"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+cp "${BIN_DIRECTORY}/vbagx_wii.dol" "${DIST_DIRECTORY}/wii/apps/vbagx/boot.dol"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+cp "readme.txt" "${DIST_DIRECTORY}/wii/apps/vbagx/readme.txt"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+cp --recursive "hbc/." "${DIST_DIRECTORY}/wii/apps/vbagx/"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+create_directory "${DIST_DIRECTORY}/wii/vbagx"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+create_directory "${DIST_DIRECTORY}/wii/vbagx/roms"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+create_directory "${DIST_DIRECTORY}/wii/vbagx/roms/Game Boy.roms"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+create_directory "${DIST_DIRECTORY}/wii/vbagx/roms/Game Boy Color.roms"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+create_directory "${DIST_DIRECTORY}/wii/vbagx/roms/Game Boy Advance.roms"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+cp --recursive "covers/" "${DIST_DIRECTORY}/wii/vbagx/"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+change_directory "${DIST_DIRECTORY}/wii"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+zip -r "${DIST_DIRECTORY}/VisualBoyAdvanceGX-Cover-${SOURCE_REVISION}.zip" . 1> /dev/null
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+change_directory "${SCRIPT_DIRECTORY}"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+remove_directory "${DIST_DIRECTORY}/wii"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+
+# create GameCube dist zip
+create_directory "${DIST_DIRECTORY}/gc"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+cp "readme.txt" "${DIST_DIRECTORY}/gc/readme.txt"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+cp "${BIN_DIRECTORY}/vbagx_gc.dol" "${DIST_DIRECTORY}/gc/vbagx_gc.dol"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+change_directory "${DIST_DIRECTORY}/gc"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+zip -r "${DIST_DIRECTORY}/VisualBoyAdvanceGX-Cover-${SOURCE_REVISION}-GameCube.zip" . 1> /dev/null
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+change_directory "${SCRIPT_DIRECTORY}"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
+remove_directory "${DIST_DIRECTORY}/gc"
+if [ ${?} -ne 0 ]
+then
+    # make best effort to return to the original directory
+    change_directory "${CURRENT_DIRECTORY}"
+    exit 1
+fi
 
 # change back to the current directory
 change_directory "${CURRENT_DIRECTORY}"
